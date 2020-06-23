@@ -1,0 +1,33 @@
+{
+    "name": "czarsoft/wp-cli-freemius-toolkit",
+    "description": "Freemius developer toolkit",
+    "type": "wp-cli-package",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mateusz Czardybon",
+            "email": "mczardybon.czarsoft@gmail.com"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "bootstrap.php",
+            "vendor/freemius/php-sdk/freemius/Freemius.php"
+        ]
+    },
+    "require": {
+        "freemius/php-sdk": "dev-master",
+        "symfony/yaml": "^5.1",
+        "vlucas/phpdotenv": "^5.0",
+        "ext-zip": "*",
+        "nelexa/zip": "^3.3",
+        "cweagans/composer-patches": "^1.6"
+    },
+    "extra": {
+        "patches": {
+            "freemius/php-sdk": {
+                "Fix getting file mime-type": "./freemius.patch"
+            }
+        }
+    }
+}
