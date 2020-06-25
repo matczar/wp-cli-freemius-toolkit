@@ -18,7 +18,6 @@
     "require": {
         "symfony/yaml": "^5.1",
         "vlucas/phpdotenv": "^5.0",
-        "ext-zip": "*",
         "nelexa/zip": "^3.3"
     }
 }
