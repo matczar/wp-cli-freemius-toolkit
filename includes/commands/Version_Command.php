@@ -20,7 +20,7 @@ class Version_Command extends \WP_CLI_Command
     const ARCHIVE_NAME = 'new-version.zip';
 
     /**
-     * Deploy new version of the plugin
+     * Deploy new version of the plugin.
      *
      * ## OPTIONS
      *
@@ -133,7 +133,40 @@ class Version_Command extends \WP_CLI_Command
     }
 
     /**
-     * Lists plugin's versions
+     * List plugin versions.
+     *
+     * ## OPTIONS
+     *
+     * [--fields=<fields>]
+     * : Limit the output to specific fields. Defaults to all fields.
+     *
+     * [--format=<format>]
+     * : Render output in a particular format.
+     * ---
+     * default: table
+     * options:
+     *   - table
+     *   - csv
+     *   - ids
+     *   - json
+     *   - yaml
+     * ---
+     *
+     * ## AVAILABLE FIELDS
+     *
+     * These fields will be displayed by default for each version:
+     *
+     * * id
+     * * version
+     * * sdk_version
+     * * requires_platform_version
+     * * requires_platform_version
+     * * tested_up_to_version
+     * * downloaded
+     * * release_mode
+     * * created
+     * * updated
+     *
      * @subcommand list
      */
     public function list_($args, $assoc_args)
