@@ -21,7 +21,7 @@ class Freemius
             $config_dir = dirname(WP_CLI::get_runner()->get_global_config_path());
             $user_config_dir = Utils\get_home_dir() . '/.wp-cli';
             if (file_exists($user_config_dir . '/.freemius')) {
-                $config_dir = $user_config_dir . '/.freemius';
+                $config_dir = $user_config_dir;
             }
             $dotenv = Dotenv::createImmutable($config_dir, '.freemius');
             $dotenv->load();
