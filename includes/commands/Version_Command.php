@@ -29,12 +29,17 @@ class Version_Command extends \WP_CLI_Command
      *
      * [--add-freemius-contributor]
      * : Add Freemius as contributor of plugin. Default: false
+     *
+     * [--force]
+     * : Force update if version already exists.
      */
     public function deploy($args, $assoc_args)
     {
         $local = CLI_Utils\get_flag_value($assoc_args, 'local');
         $add_contributor = CLI_Utils\get_flag_value($assoc_args, 'add-freemius-contributor', false);
         $add_contributor = $add_contributor !== false;
+        $force_update = CLI_Utils\get_flag_value($assoc_args, 'force', false);
+        $force_update = $force_update !== false;
 
         $api = Freemius::get_api('developer');
         $freemius_conf = Freemius::get_conf();
@@ -83,12 +88,28 @@ class Version_Command extends \WP_CLI_Command
         if ($local) {
             WP_CLI::success(sprintf('The zip archive "%s" has been successfully created.', self::ARCHIVE_NAME));
         } else {
-            // TODO sprawdzic czy taka wersja nie jest już opublikowana
+            $local_version = $this->get_local_version();
+            $is_update = false;
+
+            WP_CLI::log(sprintf("Checking if version %s already exists...", $local_version));
+            if ($this->version_exists($local_version)) {
+                $is_update = true;
+                if (!$force_update) {
+                    WP_CLI::confirm(sprintf('Version %s already exists. Do you want to update its files?', $local_version), $assoc_args);
+                }
+            }
+
+            if ($is_update) {
+                WP_CLI::log("Updating existing version...");
+            } else {
+                WP_CLI::log("Deploying new version...");
+            }
             $result = $api->Api('/plugins/' . $freemius_conf['plugin_id'] . '/tags.json', 'POST', array(
                 'add_contributor' => $add_contributor
             ), array(
                 'file' => $package_path
             ));
+
             if (file_exists($package_path)) {
                 unlink($package_path);
             }
@@ -98,7 +119,11 @@ class Version_Command extends \WP_CLI_Command
             if (!isset($result->id)) {
                 WP_CLI::error($result);
             }
-            WP_CLI::success('The new version has been successfully deployed');
+            if ($is_update) {
+                WP_CLI::success(sprintf('The version %s has been successfully updated.', $local_version));
+            } else {
+                WP_CLI::success(sprintf('The new version %s has been successfully deployed.', $local_version));
+            }
             $this->show_tags([$result], $assoc_args);
             // TODO mozna dodać argument, który od razu ustawi release_mode na 'beta' lub 'released' (jako osobny request)
         }
@@ -136,6 +161,10 @@ class Version_Command extends \WP_CLI_Command
      * List plugin versions.
      *
      * ## OPTIONS
+     * [--count=<count>]
+     * : Limit the number of versions returned. Maximum: 50.
+     * ---
+     * default: 25
      *
      * [--fields=<fields>]
      * : Limit the output to specific fields. Defaults to all fields.
@@ -171,29 +200,58 @@ class Version_Command extends \WP_CLI_Command
      */
     public function list_($args, $assoc_args)
     {
+        if (intval($assoc_args['count']) <= 0 || intval($assoc_args['count']) > 50) {
+            $assoc_args['count'] = 25;
+        }
+
         $api = Freemius::get_api('developer');
         $freemius_conf = Freemius::get_conf();
-        $result = $api->Api('plugins/' . $freemius_conf['plugin_id'] . '/tags.json');
+        $params = array(
+            'count' => $assoc_args['count'],
+        );
+        $result = $api->Api('plugins/' . $freemius_conf['plugin_id'] . '/tags.json?' . http_build_query($params));
         if (isset($result->error->message)) {
             WP_CLI::error($result->error->message);
         }
-        // TODO sprawdzic czy jest obiekt $result->tags
+        if (!isset($result->tags)) {
+            WP_CLI::error('Invalid API response.');
+        }
         $tags = $result->tags;
         $this->show_tags($tags, $assoc_args);
     }
 
     private function version_exists($version)
     {
-        $versions = WP_CLI::runcommand('freemius-toolkit version list --format=json --fields=version', array('return' => true));
+        $versions = WP_CLI::runcommand('freemius-toolkit version list --format=json --fields=version --count=50', array('return' => true));
+        $versions = WP_CLI::read_value($versions, array('format' => 'json'));
         if (!is_array($versions)) {
             WP_CLI::error('Unable to get list of versions');
         }
         foreach ($versions as $ver) {
-            if ($ver->version === $version) {
+            if (isset($ver['version']) && $ver['version'] === $version) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Get plugin version
+     *
+     * @return string
+     */
+    private function get_local_version()
+    {
+        foreach (new \DirectoryIterator(getcwd()) as $file) {
+            if (!$file->isFile() || strpos($file->getFilename(), '.php') === false) {
+                continue;
+            }
+            $headers = Utils::get_file_data($file->getFilename(), array('Version' => 'Version'));
+            if (!empty($headers['Version'])) {
+                return $headers['Version'];
+            }
+        }
+        return '';
     }
 
     private function show_tags($tags, $assoc_args)

@@ -9,6 +9,9 @@ use WP_CLI\Utils;
 
 class Freemius
 {
+    /**
+     * @var \Freemius_Api[]
+     */
     static $instance = array();
     static $freemius_conf = null;
 
