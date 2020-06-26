@@ -5,6 +5,7 @@ namespace CzarSoft\WP_CLI_Freemius_Toolkit\Helpers;
 use Dotenv\Dotenv;
 use Symfony\Component\Yaml\Yaml;
 use WP_CLI;
+use WP_CLI\Utils;
 
 class Freemius
 {
@@ -17,8 +18,12 @@ class Freemius
             return self::$instance[$scope];
         }
         try {
-            $global_config_path = WP_CLI::get_runner()->get_global_config_path();
-            $dotenv = Dotenv::createImmutable(dirname($global_config_path), '.freemius');
+            $config_dir = dirname(WP_CLI::get_runner()->get_global_config_path());
+            $user_config_dir = Utils\get_home_dir() . '/.wp-cli';
+            if (file_exists($user_config_dir . '/.freemius')) {
+                $config_dir = $user_config_dir . '/.freemius';
+            }
+            $dotenv = Dotenv::createImmutable($config_dir, '.freemius');
             $dotenv->load();
             $dotenv->required(['FS__API_DEV_ID', 'FS__API_PUBLIC_KEY', 'FS__API_SECRET_KEY']);
         } catch (\Exception $e) {
