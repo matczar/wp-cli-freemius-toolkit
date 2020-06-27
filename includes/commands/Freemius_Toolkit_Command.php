@@ -23,7 +23,7 @@ class Freemius_Toolkit_Command extends \WP_CLI_Command
         WP_CLI::line('WP-CLI Freemius Toolkit version: v' . WP_CLI_FREEMIUS_TOOLKIT_VERSION);
         WP_CLI::line();
         WP_CLI::line('Created by Mateusz Czardybon <mczardybon.czarsoft@gmail.com>');
-//		WP_CLI::line('Gitlab: https://git.netizens.pl/wp/wp-cli-neti');
+		WP_CLI::line('GitHub: https://github.com/matczar/wp-cli-freemius-toolkit');
         WP_CLI::line();
     }
 }
