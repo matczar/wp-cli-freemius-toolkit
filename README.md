@@ -10,7 +10,7 @@
 - WP-CLI >= 2.4.0
 
 ### Via WP-CLI Package Manager (requires wp-cli >= 2.4.0)
-Just run `wp package install mczardybon-czarsoft/wp-cli-freemius-toolkit`
+Just run `wp package install matczar/wp-cli-freemius-toolkit`
 
 ## Configuration
 

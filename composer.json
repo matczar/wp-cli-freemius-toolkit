@@ -1,5 +1,5 @@
 {
-    "name": "czarsoft/wp-cli-freemius-toolkit",
+    "name": "matczar/wp-cli-freemius-toolkit",
     "description": "Freemius developer toolkit",
     "type": "wp-cli-package",
     "license": "MIT",
