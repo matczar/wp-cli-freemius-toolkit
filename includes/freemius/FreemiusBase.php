@@ -45,7 +45,7 @@
 
     if ( class_exists( 'Freemius_Api_Base' ) ) {
         return;
-    }	
+    }
 
 	abstract class Freemius_Api_Base
 	{
@@ -97,6 +97,9 @@
 				$pPath = substr($pPath, 0, strlen($pPath) - $format_length);
 
 			switch ($this->_scope) {
+                case 'none':
+                    $base = '';
+                    break;
 				case 'app':
 					$base = '/apps/' . $this->_id;
 					break;
