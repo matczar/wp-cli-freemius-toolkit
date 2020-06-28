@@ -21,7 +21,7 @@ class Freemius_Toolkit_Command extends \WP_CLI_Command
      */
     public function info($args, $assoc_args)
     {
-        WP_CLI::line('WP-CLI Freemius Toolkit version: v' . WP_CLI_FREEMIUS_TOOLKIT_VERSION);
+        WP_CLI::line('WP-CLI Freemius Toolkit version: ' . WP_CLI_FREEMIUS_TOOLKIT_VERSION);
         WP_CLI::line();
         WP_CLI::line('Created by Mateusz Czardybon <mczardybon.czarsoft@gmail.com>');
         WP_CLI::line('GitHub: https://github.com/matczar/wp-cli-freemius-toolkit');
