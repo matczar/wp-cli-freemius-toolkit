@@ -47,7 +47,7 @@ Lists, deploys and delete plugin versions.
 List plugin versions.
 
 ~~~
-wp freemius-toolkit version list [--fields=<fields>] [--format=<format>]
+wp freemius-toolkit version list [--count=<count>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 ### wp freemius-toolkit version deploy
@@ -55,8 +55,17 @@ wp freemius-toolkit version list [--fields=<fields>] [--format=<format>]
 List plugin versions.
 
 ~~~
-wp freemius-toolkit version deploy [--local] [--add-freemius-contributor]
+wp freemius-toolkit version deploy [--local] [--add-freemius-contributor] [--force]
 ~~~
+
+### wp freemius-toolkit version download
+
+Download plugin version.
+
+~~~
+wp freemius-toolkit version download <id>... [--premium] [--file=<file>]
+~~~
+
 
 ### wp freemius-toolkit version delete
 

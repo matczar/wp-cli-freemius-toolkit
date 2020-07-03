@@ -36,10 +36,8 @@ class Version_Command extends \WP_CLI_Command
     public function deploy($args, $assoc_args)
     {
         $local = CLI_Utils\get_flag_value($assoc_args, 'local');
-        $add_contributor = CLI_Utils\get_flag_value($assoc_args, 'add-freemius-contributor', false);
-        $add_contributor = $add_contributor !== false;
-        $force_update = CLI_Utils\get_flag_value($assoc_args, 'force', false);
-        $force_update = $force_update !== false;
+        $add_contributor = (bool)CLI_Utils\get_flag_value($assoc_args, 'add-freemius-contributor', false);
+        $force_update = (bool)CLI_Utils\get_flag_value($assoc_args, 'force', false);
 
         $api = Freemius::get_api('developer');
         $freemius_conf = Freemius::get_conf();
@@ -88,7 +86,7 @@ class Version_Command extends \WP_CLI_Command
         if ($local) {
             WP_CLI::success(sprintf('The zip archive "%s" has been successfully created.', self::ARCHIVE_NAME));
         } else {
-            $local_version = $this->get_local_version();
+            $local_version = $this->get_plugin_header('Version');
             $is_update = false;
 
             WP_CLI::log(sprintf("Checking if version %s already exists...", $local_version));
@@ -158,6 +156,55 @@ class Version_Command extends \WP_CLI_Command
     }
 
     /**
+     * Download plugin version.
+     *
+     * ## OPTIONS
+     *
+     * <id>...
+     * : ID of version to download.
+     *
+     * [--premium]
+     * : Retrieve a premium version of the plugin.
+     *
+     * [--file=<file>]
+     * : The name of the plugin file that will be saved to disk. Eg. "my-plugin.zip".
+     *
+     */
+    public function download($args, $assoc_args)
+    {
+        if (intval($args[0]) <= 0) {
+            WP_CLI::error('Invalid ID');
+        }
+        $premium = (bool)CLI_Utils\get_flag_value($assoc_args, 'premium', false);
+        $filename = CLI_Utils\get_flag_value($assoc_args, 'file');
+
+        $api = Freemius::get_api('developer');
+        $freemius_conf = Freemius::get_conf();
+
+        $plugin_slug = basename(getcwd());
+
+        // API redirects to AWS S3, so we need allow to follow this redirect
+        $api::$CURL_OPTS[CURLOPT_FOLLOWLOCATION] = true;
+        $result = $api->Api('plugins/' . $freemius_conf['plugin_id'] . '/tags/' . $args[0] . '.zip' . ($premium ? '?is_premium=true' : ''), 'GET');
+        if (isset($result->error->message)) {
+            WP_CLI::error($result->error->message);
+        }
+        if (empty($result)) {
+            WP_CLI::error('Invalid response.');
+        }
+
+        $ver = $this->get_single_version_by('id', $args[0]);
+        if (empty($filename)) {
+            $filename = sprintf('%s-%s%s.zip', $plugin_slug, isset($ver['version']) ? $ver['version'] : '', $premium ? '-premium' : '');
+        }
+        if (!file_put_contents($filename, $result)) {
+            WP_CLI::error('Unable to save file.');
+        }
+
+        WP_CLI::success(sprintf('File %s has been successfully downloaded.', $filename));
+    }
+
+    /**
      * List plugin versions.
      *
      * ## OPTIONS
@@ -222,16 +269,24 @@ class Version_Command extends \WP_CLI_Command
 
     private function version_exists($version)
     {
-        $versions = WP_CLI::runcommand('freemius-toolkit version list --format=json --fields=version --count=50', array('return' => true));
+        $ver = $this->get_single_version_by('version', $version);
+
+        return $ver !== false;
+    }
+
+    private function get_single_version_by($field, $version)
+    {
+        $versions = WP_CLI::runcommand('freemius-toolkit version list --format=json --count=50', array('return' => true));
         $versions = WP_CLI::read_value($versions, array('format' => 'json'));
         if (!is_array($versions)) {
             WP_CLI::error('Unable to get list of versions');
         }
         foreach ($versions as $ver) {
-            if (isset($ver['version']) && $ver['version'] === $version) {
-                return true;
+            if (isset($ver[$field]) && $ver[$field] === $version) {
+                return $ver;
             }
         }
+
         return false;
     }
 
@@ -249,6 +304,20 @@ class Version_Command extends \WP_CLI_Command
             $headers = Utils::get_file_data($file->getFilename(), array('Version' => 'Version'));
             if (!empty($headers['Version'])) {
                 return $headers['Version'];
+            }
+        }
+        return '';
+    }
+
+    private function get_plugin_header($header)
+    {
+        foreach (new \DirectoryIterator(getcwd()) as $file) {
+            if (!$file->isFile() || strpos($file->getFilename(), '.php') === false) {
+                continue;
+            }
+            $headers = Utils::get_file_data($file->getFilename(), array($header => $header));
+            if (!empty($headers[$header])) {
+                return $headers[$header];
             }
         }
         return '';
