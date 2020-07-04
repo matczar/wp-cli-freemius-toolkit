@@ -4,7 +4,7 @@ if ( defined( 'WP_CLI_FREEMIUS_TOOLKIT_VERSION' ) || ! defined( 'WP_CLI' ) ) {
 	return;
 }
 
-define( 'WP_CLI_FREEMIUS_TOOLKIT_VERSION', 'v0.3' );
+define( 'WP_CLI_FREEMIUS_TOOLKIT_VERSION', 'v0.4' );
 define( 'WP_CLI_FREEMIUS_TOOLKIT_PATH', dirname( __FILE__ ) );
 define( 'WP_CLI_FREEMIUS_TOOLKIT_COMMANDS_PATH', WP_CLI_FREEMIUS_TOOLKIT_PATH . '/includes/commands' );
 
