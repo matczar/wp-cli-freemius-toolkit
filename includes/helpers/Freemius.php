@@ -6,6 +6,7 @@ use Dotenv\Dotenv;
 use Symfony\Component\Yaml\Yaml;
 use WP_CLI;
 use WP_CLI\Utils;
+use Exception;
 
 class Freemius
 {
@@ -26,9 +27,19 @@ class Freemius
             if (file_exists($user_config_dir . '/.freemius')) {
                 $config_dir = $user_config_dir;
             }
-            $dotenv = Dotenv::createImmutable($config_dir, '.freemius');
-            $dotenv->load();
-            $dotenv->required(['FS__API_DEV_ID', 'FS__API_PUBLIC_KEY', 'FS__API_SECRET_KEY']);
+            if (file_exists($config_dir . '/.freemius')) {
+                $dotenv = Dotenv::createImmutable($config_dir, '.freemius');
+                $dotenv->load();
+            }
+            $err = array();
+            foreach (array('FS__API_DEV_ID', 'FS__API_PUBLIC_KEY', 'FS__API_SECRET_KEY') as $key) {
+                if (empty($_ENV[$key])) {
+                    $err[] = $key;
+                }
+            }
+            if (!empty($err)) {
+                throw new Exception(sprintf('One or more environment variables is missing: %s.', join(', ', $err)));
+            }
         } catch (\Exception $e) {
             WP_CLI::error($e->getMessage());
         }
