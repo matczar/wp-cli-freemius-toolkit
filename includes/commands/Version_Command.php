@@ -386,7 +386,7 @@ class Version_Command extends \WP_CLI_Command
             $tag_output['created'] = $tag->created;
             $tag_output['updated'] = $tag->updated;
 //            $tag_output['is_released'] = $tag->is_released;
-            $list[$tag_output['version']] = $tag_output;
+            $list[$tag->id] = $tag_output;
         }
 
         if ('ids' === $assoc_args['format']) {
