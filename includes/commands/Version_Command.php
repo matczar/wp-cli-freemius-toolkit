@@ -32,6 +32,36 @@ class Version_Command extends \WP_CLI_Command
      *
      * [--force]
      * : Force update if version already exists.
+     *
+     * [--fields=<fields>]
+     * : Limit info about deployed version to specific fields. Defaults to all fields.
+     *
+     * [--format=<format>]
+     * : Render info about deployed version in a particular format.
+     * ---
+     * default: table
+     * options:
+     *   - table
+     *   - csv
+     *   - ids
+     *   - json
+     *   - yaml
+     * ---
+     *
+     * ## AVAILABLE FIELDS
+     *
+     * These fields will be displayed by default for deployed version:
+     *
+     * * id
+     * * version
+     * * sdk_version
+     * * requires_platform_version
+     * * requires_platform_version
+     * * tested_up_to_version
+     * * downloaded
+     * * release_mode
+     * * created
+     * * updated
      */
     public function deploy($args, $assoc_args)
     {
