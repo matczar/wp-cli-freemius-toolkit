@@ -199,6 +199,8 @@ class Version_Command extends \WP_CLI_Command
      * [--file=<file>]
      * : The name of the plugin file that will be saved to disk. Eg. "my-plugin.zip".
      *
+     * [--return-filename]
+     * : Command returns filename of downloaded plugin.
      */
     public function download($args, $assoc_args)
     {
@@ -207,6 +209,7 @@ class Version_Command extends \WP_CLI_Command
         }
         $premium = (bool)CLI_Utils\get_flag_value($assoc_args, 'premium', false);
         $filename = CLI_Utils\get_flag_value($assoc_args, 'file');
+        $return_filename = (bool)CLI_Utils\get_flag_value($assoc_args, 'return-filename', false);
 
         $api = Freemius::get_api('developer');
         $freemius_conf = Freemius::get_conf();
@@ -231,7 +234,11 @@ class Version_Command extends \WP_CLI_Command
             WP_CLI::error('Unable to save file.');
         }
 
-        WP_CLI::success(sprintf('File %s has been successfully downloaded.', $filename));
+        if ($return_filename) {
+            WP_CLI::print_value($filename);
+        } else {
+            WP_CLI::success(sprintf('File %s has been successfully downloaded.', $filename));
+        }
     }
 
     /**
